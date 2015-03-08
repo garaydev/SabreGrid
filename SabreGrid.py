@@ -3,6 +3,9 @@ import importlib
 import pip
 import sys
 import os
+import sched
+import time
+import twisted
 
 ### import package installation function
 def install_and_import(package):
@@ -19,6 +22,15 @@ def check_module_exists(name):
     pkg_loader = importlib.find_loader(name)
     found = pkg_loader is not None
     return found 
+
+#montior size of specified checkdir
+def MonitorCheckDirSize(dirChk):
+    if os.path.exists(dirChk):
+        currentChkDirSize = os.stat(dirChk).st_size
+        print(currentChkDirSize)
+    else:
+        print('ERROR: specified path "' + dirChk + '" does not exist......')
+    pass
 
 ##
 ## Single .py file, break out into modules later
@@ -44,7 +56,7 @@ msgError = 'ERROR: '
 
 # initilize module dependency names
 print(msgLog + 'initializing dependencies.....')
-dependencies = ['twisted']
+dependencies = ['twisted','datetime','sched', 'time']
 
 # dependency checking
 depenTotal = len(dependencies)
@@ -69,4 +81,32 @@ print('\t - Script Dir: ' + os.path.dirname(os.path.abspath(__file__)))
 curDir = os.path.basename(os.path.normpath(os.getcwd()))
 print('\t - Current Dir: ' + curDir)
 
-# create directory log
+##initilize paths
+sgLogDirName = 'SG_Log'
+sgCheckDir = '1a'
+sgDefaultCheckDir = 'SG_Videos'
+
+# dir checks and creates
+if not os.path.exists(sgLogDirName):
+    print(msgLog + sgLogDirName + ' dir does not exist.Creating' + sgLogDirName + ' under ' + curDir + ' .....')
+    os.makedirs(sgLogDirName)
+else:
+    print(msgLog + sgLogDirName + ' dir already exists. Continue dir setup.....')
+
+if sgCheckDir is not None and (len(sgCheckDir) > 0 and sgCheckDir.isalnum() and sgCheckDir.isspace() is False):
+    print(msgLog + 'Check directory defined. Defined as: "' + sgCheckDir + '"......')
+else:
+    print(msgLog + 'No valid Check directory specified....')
+    print(msgLog + 'Using default check directory "' + sgDefaultCheckDir + '" instead.....')
+    sgCheckDir = sgDefaultCheckDir
+
+if not os.path.exists(sgCheckDir):
+    print(msgLog + sgCheckDir + ' dir does not exist.Creating ' + sgCheckDir + ' under ' + curDir + ' .....')
+    os.makedirs(sgCheckDir)
+else:
+    print(msgLog + sgCheckDir + ' dir already exists. Continue.....')
+
+##setup twisted task(s)
+MonitorCheckDirSize(sgCheckDir)
+MonitorCheckDirSize(sgCheckDir)
+MonitorCheckDirSize(sgCheckDir)
