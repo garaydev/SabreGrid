@@ -9,7 +9,7 @@
 __author__ = "@garaydev"
 __license__ = "The MIT License (MIT)"
 __date__ = "03/07/2015"
-__version__ = "0.01337"
+__version__ = "0.01338"
 
 # global imports
 try:
@@ -50,22 +50,21 @@ def check_module_exists(name):
 def MonitorCheckDirSize(dirChk):
     if os.path.exists(dirChk):
         currentChkDirSize = os.path.getsize(dirChk)
-        #formatDirSize = best_unit_size(currentChkDirSize)
-        return 'Size of ' + str(dirChk) + ' is ' + str(currentChkDirSize) + '.'
+        formatDirSize = best_unit_size(currentChkDirSize)
+        return 'Size of ' + str(dirChk) + ' is ' + str(formatDirSize) + '.'
     else:
         print('ERROR: specified path "' + dirChk + '" does not exist......')
     pass
 
 ##format a total size of getsize() Metric prefix
 def best_unit_size(bytes_size):
-    for exp in range(0, 90, 10):
-        bu_size = abs(bytes_size) / pow(2.0, exp)
+    oneUnitRnd = 1000
+    metrics = {'KB', 'MB', 'GB', 'TB', 'PB'}
+    for met in metrics:
+        bytes_size /= oneUnitRnd
+        if bytes_size < oneUnitRnd:
+            return '{0} {1}'.format(round(bytes_size,1), met)
 
-        if int(bu_size) < 2 ** 10:
-            unit = {0: "bytes", 10: "KiB", 20: "MiB", 30: "GiB", 40: "TiB",
-                50: "PiB", 60: "EiB", 70: "ZiB", 80: "YiB"}[exp]
-        break
-    return {"s": bu_size, "u": unit, "b": bytes_size}
 
 ##last time a directory/file was accessed
 def last_access(dir):
@@ -90,6 +89,29 @@ def number_of_files(dir):
         print('LOG: A total of ' + num_of_files + ' exists in dir ' + dir )
     else:
         print('ERROR: Error finding dir/file')
+
+##Write to Log File
+def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
+    if fpath is not None and len(fpath) > 0 and os.path.isfile(fpath):
+        if msg is not None and len(msg) > 0:
+                with open(fpath, 'a') as logFileWrite:
+
+                    msgLogFile = 'LOG: '
+                    now = datetime.datetime.now()
+                    nowDate = now.strftime('%Y-%m-%d %I:%M.%S')
+
+                    logFileWrite.write( msgLogFile + nowDate + ' : ' + msg + '\n')
+                    logFileWrite.close()
+
+        if(cOutMsg and cOutMsgDate):
+            print(msgLogFile + ' ' + nowDate + ' : ' + msg)
+        elif(cOutMsg):
+            print(msgLogFile + ' : ' + msg)
+        else:
+            print('ERROR: Invalid Message. Not logged!')
+    else:
+        print('ERROR: Invalid directory path. Not logged!')
+
 
 ##
 ## Single .py file, break out into modules later
@@ -117,6 +139,9 @@ mgsTrace = 'TRACE: '
 # initilize module dependency names
 print(msgLog + 'initializing dependencies.....')
 dependencies = ['twisted','datetime','sched', 'time']
+
+# initilize log path variable, to be set later
+sgLogPath = ''
 
 # dependency checking
 depenTotal = len(dependencies)
@@ -160,12 +185,16 @@ if os.path.exists(sgLogDirName):
     nowDate = now.strftime('%Y-%m-%d')
     sgdayLogFileName = sgLogDirName + '/' + sgLogFilePrefix + '_' + str(nowDate) +'.txt'
     if not os.path.isfile(sgdayLogFileName):
+        print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" does not exist. Creating now.....')
         logFile = open(sgdayLogFileName, 'a')
         logFile.close()
     else:
+        sgLogPath = sgdayLogFileName
+        logFile = open(sgLogPath, 'a')
+        logFile.close()
         print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" already exists. Appending to this log file....')
 
-if sgCheckDir is not None and (len(sgCheckDir) > 0 and sgCheckDir.isalnum() and sgCheckDir.isspace() is False):
+if sgCheckDir is not None and (len(sgCheckDir) > 0 and sgCheckDir.isspace() is False):
     print(msgLog + 'Check directory defined. Defined as: "' + sgCheckDir + '"......')
 else:
     print(msgLog + 'No valid Check directory specified....')
@@ -179,14 +208,8 @@ else:
     print(msgLog + '"' + sgCheckDir + '" dir already exists. Continue.....')
 
 ##setup twisted task(s)
-MonitorCheckDirSize(sgCheckDir)
 
-if os.path.isfile(sgdayLogFileName):
-    with open(sgdayLogFileName, 'a') as logFileWrite:
-        now = datetime.datetime.now()
-        nowDate = now.strftime('%Y-%m-%d')
-        logFileWrite.write( mgsTrace  + ' ' + nowDate + ' : ' + MonitorCheckDirSize(sgCheckDir) + '\n')
-        logFileWrite.close()
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
 
-#reactor.callLater(3.5, f, MonitorCheckDirSize)
+#reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
