@@ -19,11 +19,11 @@ try:
     import os
     import sched
     import time
-    import twisted
     import glob
-    import twisted.internet
     import datetime
     import sched
+    import collections
+    from collections import OrderedDict
 except ImportError:
     # check if required dependencies have been installed
     print((os.linesep * 2).join(["An error found importing one module:",
@@ -48,8 +48,12 @@ def check_module_exists(name):
 
 #montior size of specified checkdir
 def MonitorCheckDirSize(dirChk):
+    totalSize = 0
+
+    fileList = os.listdir(dirChk)
+
     if os.path.exists(dirChk):
-        currentChkDirSize = os.path.getsize(dirChk)
+        currentChkDirSize = os.stat(dirChk + '/' + fileList[0]).st_size
         formatDirSize = best_unit_size(currentChkDirSize)
         return 'Size of ' + str(dirChk) + ' is ' + str(formatDirSize) + '.'
     else:
@@ -59,12 +63,13 @@ def MonitorCheckDirSize(dirChk):
 ##format a total size of getsize() Metric prefix
 def best_unit_size(bytes_size):
     oneUnitRnd = 1000
-    metrics = {'KB', 'MB', 'GB', 'TB', 'PB'}
-    for met in metrics:
+    metrics = { 1:'KB', 2:'MB', 3:'GB', 4:'TB', 5:'PB'}
+    metOrder = OrderedDict(sorted(metrics.items()))
+    for i, met in enumerate(metOrder, start=1):
+        print(met)
         bytes_size /= oneUnitRnd
         if bytes_size < oneUnitRnd:
             return '{0} {1}'.format(round(bytes_size,1), met)
-
 
 ##last time a directory/file was accessed
 def last_access(dir):
@@ -94,14 +99,11 @@ def number_of_files(dir):
 def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
     if fpath is not None and len(fpath) > 0 and os.path.isfile(fpath):
         if msg is not None and len(msg) > 0:
-                with open(fpath, 'a') as logFileWrite:
-
+                with open(fpath, mode='at', encoding='utf-8') as logFileWrite:
                     msgLogFile = 'LOG: '
                     now = datetime.datetime.now()
                     nowDate = now.strftime('%Y-%m-%d %I:%M.%S')
-
                     logFileWrite.write( msgLogFile + nowDate + ' : ' + msg + '\n')
-                    logFileWrite.close()
 
         if(cOutMsg and cOutMsgDate):
             print(msgLogFile + ' ' + nowDate + ' : ' + msg)
@@ -169,7 +171,7 @@ print('\t - Current Dir: ' + curDir)
 ##initilize paths
 sgLogDirName = 'SG_Log'
 sgLogFilePrefix = 'sgDailyLog'
-sgCheckDir = '1a'
+sgCheckDir = 'SG_Videos'
 sgDefaultCheckDir = 'SG_Videos'
 
 # dir checks and creates
@@ -186,11 +188,11 @@ if os.path.exists(sgLogDirName):
     sgdayLogFileName = sgLogDirName + '/' + sgLogFilePrefix + '_' + str(nowDate) +'.txt'
     if not os.path.isfile(sgdayLogFileName):
         print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" does not exist. Creating now.....')
-        logFile = open(sgdayLogFileName, 'a')
+        logFile = open(sgdayLogFileName, mode='at', encoding='utf-8')
         logFile.close()
     else:
         sgLogPath = sgdayLogFileName
-        logFile = open(sgLogPath, 'a')
+        logFile = open(sgLogPath, mode='at', encoding='utf-8')
         logFile.close()
         print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" already exists. Appending to this log file....')
 
