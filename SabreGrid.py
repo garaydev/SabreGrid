@@ -24,6 +24,7 @@ try:
     import sched
     import collections
     from collections import OrderedDict
+    from os.path import join
 except ImportError:
     # check if required dependencies have been installed
     print((os.linesep * 2).join(["An error found importing one module:",
@@ -53,7 +54,10 @@ def MonitorCheckDirSize(dirChk):
     fileList = os.listdir(dirChk)
 
     if os.path.exists(dirChk):
-        currentChkDirSize = os.stat(dirChk + '/' + fileList[0]).st_size
+        if (len(fileList) > 0):
+            currentChkDirSize = os.stat(dirChk + '/' + fileList[0]).st_size
+        else:
+            currentChkDirSize = os.path.getsize(dirChk)
         formatDirSize = best_unit_size(currentChkDirSize)
         return 'Size of ' + str(dirChk) + ' is ' + str(formatDirSize) + '.'
     else:
@@ -62,11 +66,9 @@ def MonitorCheckDirSize(dirChk):
 
 ##format a total size of getsize() Metric prefix
 def best_unit_size(bytes_size):
-    oneUnitRnd = 1000
-    metrics = { 1:'KB', 2:'MB', 3:'GB', 4:'TB', 5:'PB'}
-    metOrder = OrderedDict(sorted(metrics.items()))
-    for i, met in enumerate(metOrder, start=1):
-        print(met)
+    oneUnitRnd = 1024
+    metrics = { 'KB', 'MB', 'GB','TB', 'PB'}
+    for met in metrics:
         bytes_size /= oneUnitRnd
         if bytes_size < oneUnitRnd:
             return '{0} {1}'.format(round(bytes_size,1), met)
@@ -94,6 +96,14 @@ def number_of_files(dir):
         print('LOG: A total of ' + num_of_files + ' exists in dir ' + dir )
     else:
         print('ERROR: Error finding dir/file')
+
+##get mp4 file total
+def GetMP4Total():
+    for (dirname, dirs, files) in os.walk('.'):
+       for filename in files:
+           if filename.endswith('.mp4') :
+               count = count + 1
+    print('Files:', count)
 
 ##Write to Log File
 def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
@@ -211,6 +221,8 @@ else:
 
 ##setup twisted task(s)
 
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
