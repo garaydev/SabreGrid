@@ -50,18 +50,17 @@ def check_module_exists(name):
 #montior size of specified checkdir
 def MonitorCheckDirSize(dirChk):
     totalSize = 0
-
     fileList = os.listdir(dirChk)
-
     if os.path.exists(dirChk):
-        if (len(fileList) > 0):
-            currentChkDirSize = os.stat(dirChk + '/' + fileList[0]).st_size
-        else:
-            currentChkDirSize = os.path.getsize(dirChk)
-        formatDirSize = best_unit_size(currentChkDirSize)
-        return 'Size of ' + str(dirChk) + ' is ' + str(formatDirSize) + '.'
+            for dirpath, dirnames, filenames in os.walk(dirChk):
+                for f in filenames:
+                    fp = os.path.join(dirpath, f)
+                    totalSize += os.path.getsize(fp)
+            formatDirSize = best_unit_size(totalSize)
+            return 'Size of the "' + str(dirChk) + '" dir is ' + str(formatDirSize) + '.'
     else:
         print('ERROR: specified path "' + dirChk + '" does not exist......')
+        return totalSize
     pass
 
 ##format a total size of getsize() Metric prefix
@@ -98,12 +97,14 @@ def number_of_files(dir):
         print('ERROR: Error finding dir/file')
 
 ##get mp4 file total
-def GetMP4Total():
-    for (dirname, dirs, files) in os.walk('.'):
+def GetSpecificFileTotals(dirChk,fileType='.mp3'):
+    count = 0
+    typeLocator = str.lower(fileType)
+    for (dirname, dirs, files) in os.walk(dirChk):
        for filename in files:
-           if filename.endswith('.mp4') :
+           if filename.endswith(typeLocator) :
                count = count + 1
-    print('Files:', count)
+    return '"'+ str.upper(typeLocator) +'" Files: ' + str(count)
 
 ##Write to Log File
 def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
@@ -124,6 +125,7 @@ def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
     else:
         print('ERROR: Invalid directory path. Not logged!')
 
+##Schedule
 
 ##
 ## Single .py file, break out into modules later
@@ -147,6 +149,10 @@ print('\n')
 msgLog = 'LOG: '
 msgError = 'ERROR: '
 mgsTrace = 'TRACE: '
+checkFileType = '.mp3'
+
+# initilize sched obj
+s = sched.scheduler(time.time, time.sleep)
 
 # initilize module dependency names
 print(msgLog + 'initializing dependencies.....')
@@ -221,8 +227,10 @@ else:
 
 ##setup twisted task(s)
 
+fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType),True,True)
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
-fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
+
+fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType),True,True)
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
