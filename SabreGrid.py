@@ -9,7 +9,7 @@
 __author__ = "@garaydev"
 __license__ = "The MIT License (MIT)"
 __date__ = "03/07/2015"
-__version__ = "0.01338"
+__version__ = "0.01339"
 
 # global imports
 try:
@@ -23,6 +23,7 @@ try:
     import datetime
     import sched
     import collections
+    import operator
     from collections import OrderedDict
     from os.path import join
 except ImportError:
@@ -31,7 +32,7 @@ except ImportError:
     str(sys.exc_info()[1]), "You need to install it", "Stopping..."]))
     sys.exit(-2)
 
-### import package installation function
+## import package installation function
 def install_and_import(package):
     if not check_module_exists(package):
         try:
@@ -41,14 +42,23 @@ def install_and_import(package):
         finally:
             globals()[package] = importlib.import_module(package)
 
-### import package installation function
+## import package installation function
 def check_module_exists(name):
     pkg_loader = importlib.find_loader(name)
     found = pkg_loader is not None
     return found 
 
-#montior size of specified checkdir
-def MonitorCheckDirSize(dirChk):
+## get list of files ordered by size
+def FilesBySize(dirChk,msgPrint=False):
+    getall = [ [files, os.path.getsize(files)] for files in os.listdir(dirChk) ]
+    sorted(getall, key=operator.itemgetter(1))
+    filez = sorted(getall, key=operator.itemgetter(1))
+    print(getall)
+    print(filez)
+
+## montior size of specified checkdir
+def MonitorCheckDirSize(dirChk,msgPrint=False):
+    """Return total size of dirs and sub-dirs"""
     totalSize = 0
     fileList = os.listdir(dirChk)
     if os.path.exists(dirChk):
@@ -57,20 +67,23 @@ def MonitorCheckDirSize(dirChk):
                     fp = os.path.join(dirpath, f)
                     totalSize += os.path.getsize(fp)
             formatDirSize = best_unit_size(totalSize)
-            return 'Size of the "' + str(dirChk) + '" dir is ' + str(formatDirSize) + '.'
     else:
         print('ERROR: specified path "' + dirChk + '" does not exist......')
         return totalSize
+    if(msgPrint):
+        return 'Size of the "' + str(dirChk) + '" dir is ' + str(formatDirSize) + '.'
+    else:
+        str(formatDirSize)
     pass
 
-##format a total size of getsize() Metric prefix
+## format a total size of getsize() Metric prefix
 def best_unit_size(bytes_size):
     oneUnitRnd = 1024
     metrics = { 'KB', 'MB', 'GB','TB', 'PB'}
     for met in metrics:
         bytes_size /= oneUnitRnd
         if bytes_size < oneUnitRnd:
-            return '{0} {1}'.format(round(bytes_size,1), met)
+             return '{0} {1}'.format(round(bytes_size,1), met)
 
 ##last time a directory/file was accessed
 def last_access(dir):
@@ -97,25 +110,28 @@ def number_of_files(dir):
         print('ERROR: Error finding dir/file')
 
 ##get mp4 file total
-def GetSpecificFileTotals(dirChk,fileType='.mp3'):
+def GetSpecificFileTotals(dirChk,fileType='.mp3',msgPrint=False):
     count = 0
+    prntMsg = msgPrint 
     typeLocator = str.lower(fileType)
     for (dirname, dirs, files) in os.walk(dirChk):
        for filename in files:
-           if filename.endswith(typeLocator) :
+          if filename.endswith(typeLocator) :
                count = count + 1
-    return '"'+ str.upper(typeLocator) +'" Files: ' + str(count)
+    if(prntMsg):
+        return '"'+ str.upper(typeLocator) +'" Files: ' + str(count)
+    else:
+        return str(count)
 
 ##Write to Log File
 def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
     if fpath is not None and len(fpath) > 0 and os.path.isfile(fpath):
         if msg is not None and len(msg) > 0:
-                with open(fpath, mode='at', encoding='utf-8') as logFileWrite:
-                    msgLogFile = 'LOG: '
-                    now = datetime.datetime.now()
-                    nowDate = now.strftime('%Y-%m-%d %I:%M.%S')
-                    logFileWrite.write( msgLogFile + nowDate + ' : ' + msg + '\n')
-
+            with open(fpath, mode='at', encoding='utf-8') as logFileWrite:
+                     msgLogFile = 'LOG: '
+                     now = datetime.datetime.now()
+                     nowDate = now.strftime('%Y-%m-%d %I:%M.%S')
+                     logFileWrite.write( msgLogFile + nowDate + ' : ' + msg + '\n')
         if(cOutMsg and cOutMsgDate):
             print(msgLogFile + ' ' + nowDate + ' : ' + msg)
         elif(cOutMsg):
@@ -123,7 +139,7 @@ def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
         else:
             print('ERROR: Invalid Message. Not logged!')
     else:
-        print('ERROR: Invalid directory path. Not logged!')
+         print('ERROR: Invalid directory path. Not logged!')
 
 ##Schedule
 
@@ -227,11 +243,13 @@ else:
 
 ##setup twisted task(s)
 
-fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType),True,True)
-fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
+fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),True,True)
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
 
-fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType),True,True)
-fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True)
+fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),True,True)
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
+
+FilesBySize(sgCheckDir,True)
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
