@@ -50,11 +50,24 @@ def check_module_exists(name):
 
 ## get list of files ordered by size
 def FilesBySize(dirChk,msgPrint=False):
-    getall = [ [files, os.path.getsize(files)] for files in os.listdir(dirChk) ]
-    sorted(getall, key=operator.itemgetter(1))
-    filez = sorted(getall, key=operator.itemgetter(1))
-    print(getall)
-    print(filez)
+    """Return size of files by size based on getsize() byte size"""
+    getallFiles = []
+    formFiles = []
+    for (dirpath, dirs, files) in os.walk(dirChk):
+      for f in files:
+           fp = os.path.join(dirpath, f)
+           getallFiles.append([f, os.path.getsize(fp)])
+    if(getallFiles is not None):
+      sortedFiles = sorted(getallFiles, key=operator.itemgetter(1))
+      for fi in sortedFiles:
+          fSize = fi[1]
+          fName = fi[0]
+          formatedSize = best_unit_size(fSize)
+          formFiles.append([fName,formatedSize])
+    
+    if(formFiles is not None and len(formFiles) > 0):
+        print(formFiles)
+    
 
 ## montior size of specified checkdir
 def MonitorCheckDirSize(dirChk,msgPrint=False):
@@ -78,12 +91,15 @@ def MonitorCheckDirSize(dirChk,msgPrint=False):
 
 ## format a total size of getsize() Metric prefix
 def best_unit_size(bytes_size):
-    oneUnitRnd = 1024
-    metrics = { 'KB', 'MB', 'GB','TB', 'PB'}
-    for met in metrics:
-        bytes_size /= oneUnitRnd
-        if bytes_size < oneUnitRnd:
-             return '{0} {1}'.format(round(bytes_size,1), met)
+    if(str(bytes_size).isnumeric):
+       oneUnitRnd = 1024
+       metrics = { 'KB', 'MB', 'GB','TB', 'PB'}
+       for met in metrics:
+           bytes_size /= oneUnitRnd
+           if bytes_size < oneUnitRnd:
+                return '{0} {1}'.format(round(bytes_size,1), met)
+    else:
+         return '0 KB'
 
 ##last time a directory/file was accessed
 def last_access(dir):
