@@ -26,6 +26,7 @@ try:
     import operator
     from collections import OrderedDict
     from os.path import join
+    import shutil
 except ImportError:
     # check if required dependencies have been installed
     print((os.linesep * 2).join(["An error found importing one module:",
@@ -58,11 +59,13 @@ def FilesBySize(dirChk,msgPrint=False):
            getallFiles.append([f, os.path.getsize(fp), itemCreatedTime(fp)])
     if(getallFiles is not None):
       sortedFiles = sorted(getallFiles, key=operator.itemgetter(1),reverse=True)
-      for fi in sortedFiles:
+      for index,fi in enumerate(sortedFiles,start=1):
           fSize = fi[1]
           fName = fi[0]
+          fTime = fi[2]
+          #formatedTime = FormatTime(fTime)
           formatedSize = best_unit_size(fSize)
-          formFiles.append([fName,formatedSize])
+          formFiles.append([index,fName,formatedSize,fTime])
     if(formFiles is not None and len(formFiles) > 0):
         print(formFiles)
 
@@ -144,6 +147,11 @@ def GetSpecificFileTotals(dirChk,fileType='.mp3',msgPrint=False):
         return '"'+ str.upper(typeLocator) +'" Files: ' + str(count)
     else:
         return str(count)
+
+def FormatTime(sendTime):
+    """Formatt Time to standard SG format."""
+    formattedTime = time.strptime(sendTime,'%Y-%m-%d %I:%M.%S')
+    return formattedTime
 
 def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
     """Write to Log File"""
