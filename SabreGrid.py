@@ -32,8 +32,8 @@ except ImportError:
     str(sys.exc_info()[1]), "You need to install it", "Stopping..."]))
     sys.exit(-2)
 
-## import package installation function
 def install_and_import(package):
+    """Attempt to import and install packages using importlib functionality"""
     if not check_module_exists(package):
         try:
             importlib.import_module(package)
@@ -41,14 +41,13 @@ def install_and_import(package):
             pip.main(['install', package])
         finally:
             globals()[package] = importlib.import_module(package)
-
-## import package installation function
+        
 def check_module_exists(name):
+    """Import package installation function"""
     pkg_loader = importlib.find_loader(name)
     found = pkg_loader is not None
     return found 
 
-## get list of files ordered by size
 def FilesBySize(dirChk,msgPrint=False):
     """Return size of files by size based on getsize() byte size"""
     getallFiles = []
@@ -56,20 +55,17 @@ def FilesBySize(dirChk,msgPrint=False):
     for (dirpath, dirs, files) in os.walk(dirChk):
       for f in files:
            fp = os.path.join(dirpath, f)
-           getallFiles.append([f, os.path.getsize(fp)])
+           getallFiles.append([f, os.path.getsize(fp), itemCreatedTime(fp)])
     if(getallFiles is not None):
-      sortedFiles = sorted(getallFiles, key=operator.itemgetter(1))
+      sortedFiles = sorted(getallFiles, key=operator.itemgetter(1),reverse=True)
       for fi in sortedFiles:
           fSize = fi[1]
           fName = fi[0]
           formatedSize = best_unit_size(fSize)
           formFiles.append([fName,formatedSize])
-    
     if(formFiles is not None and len(formFiles) > 0):
         print(formFiles)
-    
 
-## montior size of specified checkdir
 def MonitorCheckDirSize(dirChk,msgPrint=False):
     """Return total size of dirs and sub-dirs"""
     totalSize = 0
@@ -89,8 +85,9 @@ def MonitorCheckDirSize(dirChk,msgPrint=False):
         str(formatDirSize)
     pass
 
-## format a total size of getsize() Metric prefix
+
 def best_unit_size(bytes_size):
+    """Format a total size of getsize() Metric prefix"""
     if(str(bytes_size).isnumeric):
        oneUnitRnd = 1024
        metrics = { 'KB', 'MB', 'GB','TB', 'PB'}
@@ -101,32 +98,41 @@ def best_unit_size(bytes_size):
     else:
          return '0 KB'
 
-##last time a directory/file was accessed
-def last_access(dir):
-    if not os.path.exists(dir):
-        lastA = ctime(os.path.getatime(dir))
-        print('LOG: ' + dir + ' was last modified at ' + lastA )
+def itemAccessedTime(dir):
+    """Last time a directory/file was accessed"""
+    if os.path.exists(dir):
+        AccessedTime = time.ctime(os.path.getatime(dir))
+        return AccessedTime
     else:
-        print('ERROR: Error finding dir/file')
+        return 0
 
-##last time a directory/file was changed
-def last_change(dir):
-    if not os.path.exists(dir):
-        lastC = ctime(os.path.getmtime(dir))
-        print('LOG: ' + dir + ' was last modified at ' + lastC )
+def itemModifiedTime(dir):
+    """Last time a directory/file was modified/changed"""
+    if os.path.exists(dir):
+        modTime = time.ctime(os.path.getmtime(dir))
+        return modTime
     else:
-        print('ERROR: Error finding dir/file')
+        return 0
 
-##Number of files found in directory
+def itemCreatedTime(dir):
+    """Non-unix time when directory/file was created"""
+    if os.path.exists(dir):
+        createTime = time.ctime(os.path.getctime(dir))
+        return createTime
+    else:
+        return 0
+
+
 def number_of_files(dir):
+    """Number of files found in directory"""
     if not os.path.exists(dir):
         num_of_files = len(glob("*"))
         print('LOG: A total of ' + num_of_files + ' exists in dir ' + dir )
     else:
         print('ERROR: Error finding dir/file')
 
-##get mp4 file total
 def GetSpecificFileTotals(dirChk,fileType='.mp3',msgPrint=False):
+    """Get mp4 file total"""
     count = 0
     prntMsg = msgPrint 
     typeLocator = str.lower(fileType)
@@ -139,8 +145,8 @@ def GetSpecificFileTotals(dirChk,fileType='.mp3',msgPrint=False):
     else:
         return str(count)
 
-##Write to Log File
 def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
+    """Write to Log File"""
     if fpath is not None and len(fpath) > 0 and os.path.isfile(fpath):
         if msg is not None and len(msg) > 0:
             with open(fpath, mode='at', encoding='utf-8') as logFileWrite:
@@ -157,25 +163,29 @@ def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
     else:
          print('ERROR: Invalid directory path. Not logged!')
 
+def SabreGridIntro():
+    """Print the welcome message"""
+    print('\n')
+    print('________________________________________________________________')
+    print('  _____         ____  _____  ______ _____ _____  _____ _____ ' )
+    print(' / ____|  /\   |  _ \|  __ \|  ____/ ____|  __ \|_   _|  __ \ ')
+    print('| (___   /  \  | |_) | |__) | |__ | |  __| |__) | | | | |  | |')
+    print(' \___ \ / /\ \ |  _ <|  _  /|  __|| | |_ |  _  /  | | | |  | |')
+    print(' ____) / ____ \| |_) | | \ \| |___| |__| | | \ \ _| |_| |__| |')
+    print('|_____/_/    \_\____/|_|  \_\______\_____|_|  \_\_____|_____/ ')
+    print('\n')
+    print('\t\t CONTROL YOUR SECURITY GRID')
+    print('________________________________________________________________')
+    print('\n')
+
 ##Schedule
 
 ##
 ## Single .py file, break out into modules later
 ##
 
-##print SabreLogo
-print('\n')
-print('________________________________________________________________')
-print('  _____         ____  _____  ______ _____ _____  _____ _____ ' )
-print(' / ____|  /\   |  _ \|  __ \|  ____/ ____|  __ \|_   _|  __ \ ')
-print('| (___   /  \  | |_) | |__) | |__ | |  __| |__) | | | | |  | |')
-print(' \___ \ / /\ \ |  _ <|  _  /|  __|| | |_ |  _  /  | | | |  | |')
-print(' ____) / ____ \| |_) | | \ \| |___| |__| | | \ \ _| |_| |__| |')
-print('|_____/_/    \_\____/|_|  \_\______\_____|_|  \_\_____|_____/ ')
-print('\n')
-print('\t\t CONTROL YOUR SECURITY GRID')
-print('________________________________________________________________')
-print('\n')
+if __name__ == '__main__':
+    SabreGridIntro()
 
 # initilize prefix variables
 msgLog = 'LOG: '
@@ -190,8 +200,7 @@ s = sched.scheduler(time.time, time.sleep)
 print(msgLog + 'initializing dependencies.....')
 dependencies = ['twisted','datetime','sched', 'time']
 
-# initilize log path variable, to be set later
-sgLogPath = ''
+
 
 # dependency checking
 depenTotal = len(dependencies)
@@ -217,33 +226,36 @@ curDir = os.path.basename(os.path.normpath(os.getcwd()))
 print('\t - Current Dir: ' + curDir)
 
 ##initilize paths
-sgLogDirName = 'SG_Log'
+sgDefaultLogDirName = 'SG_Log'
 sgLogFilePrefix = 'sgDailyLog'
 sgCheckDir = 'SG_Videos'
+# initilize log path variable, to be set later
+sgLogPath = ''
 sgDefaultCheckDir = 'SG_Videos'
 
 # dir checks and creates
-if not os.path.exists(sgLogDirName):
-    print(msgLog + sgLogDirName + ' dir does not exist.Creating' + sgLogDirName + ' under ' + curDir + ' .....')
-    os.makedirs(sgLogDirName)
+if not os.path.exists(sgDefaultLogDirName):
+    print(msgLog + sgDefaultLogDirName + ' dir does not exist. Creating "' + sgDefaultLogDirName + '" under ' + curDir + ' .....')
+    os.makedirs(sgDefaultLogDirName)
 else:
-    print(msgLog + sgLogDirName + ' dir already exists. Continue dir setup.....')
+    print(msgLog + sgDefaultLogDirName + ' dir already exists. Continue dir setup.....')
 
 ## Setup Log directory date file
-if os.path.exists(sgLogDirName):
+if os.path.exists(sgDefaultLogDirName):
     now = datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
-    sgdayLogFileName = sgLogDirName + '/' + sgLogFilePrefix + '_' + str(nowDate) +'.txt'
+    sgdayLogFileName = sgDefaultLogDirName + '/' + sgLogFilePrefix + '_' + str(nowDate) +'.txt'
     if not os.path.isfile(sgdayLogFileName):
-        print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" does not exist. Creating now.....')
-        logFile = open(sgdayLogFileName, mode='at', encoding='utf-8')
-        logFile.close()
-    else:
+        print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" does not exist. Creating now.....Created!')
         sgLogPath = sgdayLogFileName
         logFile = open(sgLogPath, mode='at', encoding='utf-8')
         logFile.close()
+    else:
         print(msgLog + 'A log file with a name of "' + sgdayLogFileName + '" already exists. Appending to this log file....')
-
+        sgLogPath = sgdayLogFileName
+        logFile = open(sgLogPath, mode='at', encoding='utf-8')
+        logFile.close()
+        
 if sgCheckDir is not None and (len(sgCheckDir) > 0 and sgCheckDir.isspace() is False):
     print(msgLog + 'Check directory defined. Defined as: "' + sgCheckDir + '"......')
 else:
@@ -252,7 +264,7 @@ else:
     sgCheckDir = sgDefaultCheckDir
 
 if not os.path.exists(sgCheckDir):
-    print(msgLog + '"' + sgCheckDir + '" dir does not exist.Creating ' + sgCheckDir + ' under ' + curDir + ' .....')
+    print(msgLog + '"' + sgCheckDir + '" dir does not exist. Creating "' + sgCheckDir + '" under ' + curDir + ' .....')
     os.makedirs(sgCheckDir)
 else:
     print(msgLog + '"' + sgCheckDir + '" dir already exists. Continue.....')
