@@ -9,7 +9,7 @@
 __author__ = "@garaydev"
 __license__ = "The MIT License (MIT)"
 __date__ = "03/07/2015"
-__version__ = "0.01339"
+__version__ = "0.01340"
 
 # global imports
 try:
@@ -50,7 +50,7 @@ def check_module_exists(name):
     found = pkg_loader is not None
     return found 
 
-def FilesBySize(dirChk,msgPrint=False):
+def GetFilesBySize(dirChk):
     """Return size of files by size based on getsize() byte size"""
     getallFiles = []
     formFiles = []
@@ -67,7 +67,7 @@ def FilesBySize(dirChk,msgPrint=False):
           formatedSize = best_unit_size(fSize)
           formFiles.append([index,fName,formatedSize,fTime])
     if(formFiles is not None and len(formFiles) > 0):
-        print(formFiles)
+        return formFiles
 
 def MonitorCheckDirSize(dirChk,msgPrint=False):
     """Return total size of dirs and sub-dirs"""
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 msgLog = 'LOG: '
 msgError = 'ERROR: '
 mgsTrace = 'TRACE: '
-checkFileType = '.m4a'
+checkFileType = '.mp3'
 
 # initilize sched obj
 s = sched.scheduler(time.time, time.sleep)
@@ -240,7 +240,7 @@ sgCheckDir = 'SG_Videos'
 # initilize log path variable, to be set later
 sgLogPath = ''
 sgDefaultCheckDir = 'SG_Videos'
-
+sgTempDropDir = ''
 # dir checks and creates
 if not os.path.exists(sgDefaultLogDirName):
     print(msgLog + sgDefaultLogDirName + ' dir does not exist. Creating "' + sgDefaultLogDirName + '" under ' + curDir + ' .....')
@@ -285,7 +285,15 @@ fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
 fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),True,True)
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
 
-FilesBySize(sgCheckDir,True)
+listOfFiles = GetFilesBySize(sgCheckDir)
+fileObj = listOfFiles[0]
+fileName = fileObj[1]
+parentPath = os.path.join(os.getcwd(), sgCheckDir)
+fpath = os.path.join(parentPath, fileName)
+if(os.path.isfile(fpath)):
+    if(os.path.isdir(sgTempDropDir)):
+        dest = os.path.join(sgTempDropDir,fileName)
+        shutil.move(fpath, dest)
 
 print(psutil.disk_partitions())
 print(psutil.disk_usage('/'))
