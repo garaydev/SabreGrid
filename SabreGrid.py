@@ -27,6 +27,7 @@ try:
     from collections import OrderedDict
     from os.path import join
     import shutil
+    import psutil
 except ImportError:
     # check if required dependencies have been installed
     print((os.linesep * 2).join(["An error found importing one module:",
@@ -63,7 +64,6 @@ def FilesBySize(dirChk,msgPrint=False):
           fSize = fi[1]
           fName = fi[0]
           fTime = fi[2]
-          #formatedTime = FormatTime(fTime)
           formatedSize = best_unit_size(fSize)
           formFiles.append([index,fName,formatedSize,fTime])
     if(formFiles is not None and len(formFiles) > 0):
@@ -199,14 +199,14 @@ if __name__ == '__main__':
 msgLog = 'LOG: '
 msgError = 'ERROR: '
 mgsTrace = 'TRACE: '
-checkFileType = '.mp3'
+checkFileType = '.m4a'
 
 # initilize sched obj
 s = sched.scheduler(time.time, time.sleep)
 
 # initilize module dependency names
 print(msgLog + 'initializing dependencies.....')
-dependencies = ['twisted','datetime','sched', 'time']
+dependencies = ['twisted','datetime','sched', 'time','psutil']
 
 
 
@@ -286,6 +286,9 @@ fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),T
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
 
 FilesBySize(sgCheckDir,True)
+
+print(psutil.disk_partitions())
+print(psutil.disk_usage('/'))
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
