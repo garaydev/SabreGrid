@@ -239,8 +239,9 @@ sgLogFilePrefix = 'sgDailyLog'
 sgCheckDir = 'SG_Videos'
 # initilize log path variable, to be set later
 sgLogPath = ''
-sgDefaultCheckDir = 'SG_Videos'
 sgTempDropDir = ''
+sgDefaultCheckDir = 'SG_Videos'
+sgMinDiskSize = 40.0
 # dir checks and creates
 if not os.path.exists(sgDefaultLogDirName):
     print(msgLog + sgDefaultLogDirName + ' dir does not exist. Creating "' + sgDefaultLogDirName + '" under ' + curDir + ' .....')
@@ -286,17 +287,31 @@ fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),T
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
 
 listOfFiles = GetFilesBySize(sgCheckDir)
-fileObj = listOfFiles[0]
-fileName = fileObj[1]
-parentPath = os.path.join(os.getcwd(), sgCheckDir)
-fpath = os.path.join(parentPath, fileName)
-if(os.path.isfile(fpath)):
-    if(os.path.isdir(sgTempDropDir)):
-        dest = os.path.join(sgTempDropDir,fileName)
-        shutil.move(fpath, dest)
+monitorFullDir = os.path.join(os.getcwd(), sgCheckDir)
+tempDropAbsPath = os.path.abspath(sgTempDropDir)
+tempDropDriveDic = os.path.splitdrive(tempDropAbsPath)
+dropDri = tempDropDriveDic[0]
+dropDrivePath = os.path.join(dropDri,'/') 
+dropDiskUsage = psutil.disk_usage(dropDrivePath)
+dskParts = psutil.disk_partitions()
+for parts in dskParts:
+    print(parts.device + ' ' + parts.fstype)
+if(dropDiskUsage.percent >= sgMinDiskSize):
+    if(listOfFiles is not None):
+        fileObj = listOfFiles[0]
+        fileCheck_Name = fileObj[1]
+        fileCheck_Size = fileObj[2]
+        parentPath = os.path.join(os.getcwd(), sgCheckDir)
+        if(os.path.isdir(parentPath)):
+            fpath = os.path.join(parentPath, fileCheck_Name)
+            if(os.path.isfile(fpath)):
+                if(os.path.isdir(sgTempDropDir)):
+                    dest = os.path.join(sgTempDropDir,fileCheck_Name)
+                    shutil.move(fpath, dest)
+else:
+    print('Cannot move any files to that disk. The quote has been met.')
 
-print(psutil.disk_partitions())
-print(psutil.disk_usage('/'))
+
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
