@@ -9,7 +9,7 @@
 __author__ = "@garaydev"
 __license__ = "The MIT License (MIT)"
 __date__ = "03/07/2015"
-__version__ = "0.01340"
+__version__ = "0.01341"
 
 # global imports
 try:
@@ -69,7 +69,7 @@ def GetFilesBySize(dirChk):
     if(formFiles is not None and len(formFiles) > 0):
         return formFiles
 
-def MonitorCheckDirSize(dirChk,msgPrint=False):
+def MonitorCheckDirSize(dirChk,msgPrint=False,formatSize=False):
     """Return total size of dirs and sub-dirs"""
     totalSize = 0
     fileList = os.listdir(dirChk)
@@ -78,15 +78,18 @@ def MonitorCheckDirSize(dirChk,msgPrint=False):
                 for f in filenames:
                     fp = os.path.join(dirpath, f)
                     totalSize += os.path.getsize(fp)
-            formatDirSize = best_unit_size(totalSize)
+            if(formatSize):
+                formatDirSize = best_unit_size(totalSize)
     else:
         print('ERROR: specified path "' + dirChk + '" does not exist......')
         return totalSize
+
     if(msgPrint):
         return 'Size of the "' + str(dirChk) + '" dir is ' + str(formatDirSize) + '.'
+    if(formatSize):
+        return formatDirSize
     else:
-        str(formatDirSize)
-    pass
+        return totalSize
 
 
 def best_unit_size(bytes_size):
@@ -171,6 +174,22 @@ def fileLogMessages(fpath,msg,cOutMsg=False,cOutMsgDate=False):
     else:
          print('ERROR: Invalid directory path. Not logged!')
 
+def moveFileToDest(moveFile,checkDir,tempDropDir):
+    """ Moves a file to it's designated location."""
+    try:
+        fileCheck_Name = moveFile[1]
+        fileCheck_Size = moveFile[2]
+        parentPath = os.path.join(os.getcwd(), checkDir)
+        if(os.path.isdir(parentPath)):
+            fpath = os.path.join(parentPath, fileCheck_Name)
+            if(os.path.isfile(fpath)):
+                if(os.path.isdir(tempDropDir)):
+                    dest = os.path.join(tempDropDir,fileCheck_Name)
+                    shutil.move(fpath, dest)
+                    return true
+    except e:
+        return false
+
 def SabreGridIntro():
     """Print the welcome message"""
     print('\n')
@@ -239,9 +258,11 @@ sgLogFilePrefix = 'sgDailyLog'
 sgCheckDir = 'SG_Videos'
 # initilize log path variable, to be set later
 sgLogPath = ''
-sgTempDropDir = ''
+sgTempDropDir = 'Q:\Industry_Works\SabreTest'
 sgDefaultCheckDir = 'SG_Videos'
-sgMinDiskSize = 40.0
+sgMinDiskSpace = 40.0
+sgCheckDirLimit = 20.0
+
 # dir checks and creates
 if not os.path.exists(sgDefaultLogDirName):
     print(msgLog + sgDefaultLogDirName + ' dir does not exist. Creating "' + sgDefaultLogDirName + '" under ' + curDir + ' .....')
@@ -281,12 +302,12 @@ else:
 ##setup twisted task(s)
 
 fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),True,True)
-fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True,True),True,True)
 
 fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),True,True)
-fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True),True,True)
+fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True,True),True,True)
 
-listOfFiles = GetFilesBySize(sgCheckDir)
+
 monitorFullDir = os.path.join(os.getcwd(), sgCheckDir)
 tempDropAbsPath = os.path.abspath(sgTempDropDir)
 tempDropDriveDic = os.path.splitdrive(tempDropAbsPath)
@@ -294,23 +315,24 @@ dropDri = tempDropDriveDic[0]
 dropDrivePath = os.path.join(dropDri,'/') 
 dropDiskUsage = psutil.disk_usage(dropDrivePath)
 dskParts = psutil.disk_partitions()
+dskPartList = []
 for parts in dskParts:
-    print(parts.device + ' ' + parts.fstype)
-if(dropDiskUsage.percent >= sgMinDiskSize):
-    if(listOfFiles is not None):
-        fileObj = listOfFiles[0]
-        fileCheck_Name = fileObj[1]
-        fileCheck_Size = fileObj[2]
-        parentPath = os.path.join(os.getcwd(), sgCheckDir)
-        if(os.path.isdir(parentPath)):
-            fpath = os.path.join(parentPath, fileCheck_Name)
-            if(os.path.isfile(fpath)):
-                if(os.path.isdir(sgTempDropDir)):
-                    dest = os.path.join(sgTempDropDir,fileCheck_Name)
-                    shutil.move(fpath, dest)
-else:
-    print('Cannot move any files to that disk. The quote has been met.')
+    dskPartList.append([parts.device,parts.fstype,parts.opts])
 
+#base call for file transfer
+currentCheckDirSize = 0
+currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
+listOfFiles = GetFilesBySize(sgCheckDir)
+
+while sgCheckDirLimit > currentCheckDirSize:
+    if(dropDiskUsage.percent >= sgMinDiskSpace):
+        if(listOfFiles is not None):
+            fileObj = listOfFiles[0]
+            moveFileToDest(fileObj,sgCheckDir,sgTempDropDir)
+    else:
+        print('Cannot move any files to that disk. The quota has been met.')
+    currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
+    listOfFiles = GetFilesBySize(sgCheckDir)
 
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
