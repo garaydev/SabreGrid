@@ -28,6 +28,7 @@ try:
     from os.path import join
     import shutil
     import psutil
+    import usb
 except ImportError:
     # check if required dependencies have been installed
     print((os.linesep * 2).join(["An error found importing one module:",
@@ -334,6 +335,13 @@ while sgCheckDirLimit > currentCheckDirSize:
     currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
     listOfFiles = GetFilesBySize(sgCheckDir)
 
+busses = usb.busses()
+for bus in busses:
+    devicesList = bus.devices
+    for dev in devicesList:
+        print("Device:", dev.filename)
+        print("idVendor: %d (0x%04x)" % (dev.idVendor, dev.idVendor))
+        print("idProduct: %d (0x%04x)" % (dev.idProduct, dev.idProduct))
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
