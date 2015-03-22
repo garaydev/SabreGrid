@@ -97,11 +97,11 @@ def best_unit_size(bytes_size):
     """Format a total size of getsize() Metric prefix"""
     if(str(bytes_size).isnumeric):
        oneUnitRnd = 1024
-       metrics = { 'KB', 'MB', 'GB','TB', 'PB'}
+       metrics = [('KB',1), ('MB',2), ('GB',3),('TB',4), ('PB',5)]
        for met in metrics:
            bytes_size /= oneUnitRnd
            if bytes_size < oneUnitRnd:
-                return '{0} {1}'.format(round(bytes_size,1), met)
+                return '{0} {1}'.format(round(bytes_size,1), met[0])
     else:
          return '0 KB'
 
@@ -186,8 +186,9 @@ def moveFileToDest(moveFile,checkDir,tempDropDir):
             if(os.path.isfile(fpath)):
                 if(os.path.isdir(tempDropDir)):
                     dest = os.path.join(tempDropDir,fileCheck_Name)
-                    shutil.move(fpath, dest)
-                    return true
+                    if not os.path.exists(dest):
+                        shutil.move(fpath, dest)
+                        return True
     except e:
         return false
 
@@ -262,7 +263,7 @@ sgLogPath = ''
 sgTempDropDir = 'Q:\Industry_Works\SabreTest'
 sgDefaultCheckDir = 'SG_Videos'
 sgMinDiskSpace = 40.0
-sgCheckDirLimit = 20.0
+sgCheckDirLimit =  20973617.0
 
 # dir checks and creates
 if not os.path.exists(sgDefaultLogDirName):
@@ -308,13 +309,12 @@ fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True,True),True,True)
 fileLogMessages(sgLogPath,GetSpecificFileTotals(sgCheckDir,checkFileType,True),True,True)
 fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir,True,True),True,True)
 
-
-monitorFullDir = os.path.join(os.getcwd(), sgCheckDir)
 tempDropAbsPath = os.path.abspath(sgTempDropDir)
 tempDropDriveDic = os.path.splitdrive(tempDropAbsPath)
 dropDri = tempDropDriveDic[0]
 dropDrivePath = os.path.join(dropDri,'/') 
 dropDiskUsage = psutil.disk_usage(dropDrivePath)
+diskUsagePercent = dropDiskUsage.percent
 dskParts = psutil.disk_partitions()
 dskPartList = []
 for parts in dskParts:
@@ -325,8 +325,11 @@ currentCheckDirSize = 0
 currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
 listOfFiles = GetFilesBySize(sgCheckDir)
 
-while sgCheckDirLimit > currentCheckDirSize:
-    if(dropDiskUsage.percent >= sgMinDiskSpace):
+dirLimitFormatted = best_unit_size(sgCheckDirLimit)
+print('Checking if monitor directory is greater than ' + str(dirLimitFormatted) + '.')
+
+while currentCheckDirSize > sgCheckDirLimit :
+    if(diskUsagePercent >= sgMinDiskSpace):
         if(listOfFiles is not None):
             fileObj = listOfFiles[0]
             moveFileToDest(fileObj,sgCheckDir,sgTempDropDir)
@@ -334,14 +337,6 @@ while sgCheckDirLimit > currentCheckDirSize:
         print('Cannot move any files to that disk. The quota has been met.')
     currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
     listOfFiles = GetFilesBySize(sgCheckDir)
-
-busses = usb.busses()
-for bus in busses:
-    devicesList = bus.devices
-    for dev in devicesList:
-        print("Device:", dev.filename)
-        print("idVendor: %d (0x%04x)" % (dev.idVendor, dev.idVendor))
-        print("idProduct: %d (0x%04x)" % (dev.idProduct, dev.idProduct))
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
