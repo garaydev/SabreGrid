@@ -29,6 +29,8 @@ try:
     import shutil
     import psutil
     import usb
+    import pymongo
+    from pymongo import MongoClient
 except ImportError:
     # check if required dependencies have been installed
     print((os.linesep * 2).join(["An error found importing one module:",
@@ -227,7 +229,7 @@ s = sched.scheduler(time.time, time.sleep)
 
 # initilize module dependency names
 print(msgLog + 'initializing dependencies.....')
-dependencies = ['twisted','datetime','sched', 'time','psutil']
+dependencies = ['twisted','datetime','sched', 'time','psutil','pymongo']
 
 
 
@@ -326,17 +328,26 @@ currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
 listOfFiles = GetFilesBySize(sgCheckDir)
 
 dirLimitFormatted = best_unit_size(sgCheckDirLimit)
-print('Checking if monitor directory is greater than ' + str(dirLimitFormatted) + '.')
+
+print(msgLog + ' Checking if monitor directory is greater than ' + str(dirLimitFormatted) + '.')
 
 while currentCheckDirSize > sgCheckDirLimit :
     if(diskUsagePercent >= sgMinDiskSpace):
+        dirLimitForm = best_unit_size(sgCheckDirLimit)
+        dirMontiorForm = best_unit_size(currentCheckDirSize)
+        print(msgLog + ' Monitor Dir is ' + str(dirMontiorForm) + ' in size, which is greater than the set quota of ' + str(dirLimitForm) + '...Moving files to Drop Dir.')
         if(listOfFiles is not None):
             fileObj = listOfFiles[0]
-            moveFileToDest(fileObj,sgCheckDir,sgTempDropDir)
+            movedCheck = moveFileToDest(fileObj,sgCheckDir,sgTempDropDir)
+            if(movedCheck):
+                fileLogMessages(sgLogPath,'Moved ' + str(fileObj[1]) + ' of size ' + str(fileObj[2]) + ' to dir: ' + str(sgTempDropDir) + '.',True,True)
     else:
         print('Cannot move any files to that disk. The quota has been met.')
+    currentCheckDirSize = 0
     currentCheckDirSize = MonitorCheckDirSize(sgCheckDir,False,False)
     listOfFiles = GetFilesBySize(sgCheckDir)
+
+##mongob implementation required
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
