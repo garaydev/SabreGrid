@@ -30,6 +30,8 @@ try:
     import psutil
     import usb
     import pymongo
+    import bottle
+    from bottle import route, run , template
     from pymongo import MongoClient
 except ImportError:
     # check if required dependencies have been installed
@@ -194,6 +196,20 @@ def moveFileToDest(moveFile,checkDir,tempDropDir):
     except e:
         return false
 
+def insertSGFilesDoc(findex,fName,fSizeFormated,fTime):
+    try:
+        connection = pymongo.MongoClient("mongodb://localhost")
+
+        db = connection.SGFiles
+        sgFilesColl = db.SGFiles 
+
+        doc = {'FileName':fName,'FileSizeFormmated':fSizeFormated,'FileTime':fTime}
+        sgFilesColl.insert_one(doc)
+        return True
+    except Exception as e:
+        print(('SGFile insert failed! Hard!'), e)
+        return False
+
 def SabreGridIntro():
     """Print the welcome message"""
     print('\n')
@@ -229,7 +245,7 @@ s = sched.scheduler(time.time, time.sleep)
 
 # initilize module dependency names
 print(msgLog + 'initializing dependencies.....')
-dependencies = ['twisted','datetime','sched', 'time','psutil','pymongo']
+dependencies = ['twisted','datetime','sched', 'time','psutil','pymongo','bottle']
 
 
 
@@ -338,6 +354,7 @@ while currentCheckDirSize > sgCheckDirLimit :
         print(msgLog + ' Monitor Dir is ' + str(dirMontiorForm) + ' in size, which is greater than the set quota of ' + str(dirLimitForm) + '...Moving files to Drop Dir.')
         if(listOfFiles is not None):
             fileObj = listOfFiles[0]
+            insertedDoc = insertSGFilesDoc(fileObj[0],fileObj[1],fileObj[2],fileObj[3])
             movedCheck = moveFileToDest(fileObj,sgCheckDir,sgTempDropDir)
             if(movedCheck):
                 fileLogMessages(sgLogPath,'Moved ' + str(fileObj[1]) + ' of size ' + str(fileObj[2]) + ' to dir: ' + str(sgTempDropDir) + '.',True,True)
@@ -348,6 +365,14 @@ while currentCheckDirSize > sgCheckDirLimit :
     listOfFiles = GetFilesBySize(sgCheckDir)
 
 ##mongob implementation required
+
+
+
+#implemeting bottle and mongodb
+
+bottle.debug(True)
+bottle.run(host='localhost', port=8081)
+
 
 #reactor.callLater(3.5, f, fileLogMessages(sgLogPath,MonitorCheckDirSize(sgCheckDir),True,True))
 #reactor.run()
