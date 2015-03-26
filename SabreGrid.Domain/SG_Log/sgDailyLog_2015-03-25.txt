@@ -1,0 +1,8 @@
+LOG: 2015-03-25 08:59.15 : ".MP3" Files: 0
+LOG: 2015-03-25 08:59.15 : Size of the "SG_Videos" dir is 0.0 KB.
+LOG: 2015-03-25 08:59.15 : ".MP3" Files: 0
+LOG: 2015-03-25 08:59.15 : Size of the "SG_Videos" dir is 0.0 KB.
+LOG: 2015-03-25 09:05.09 : ".MP3" Files: 0
+LOG: 2015-03-25 09:05.09 : Size of the "SG_Videos" dir is 0.0 KB.
+LOG: 2015-03-25 09:05.09 : ".MP3" Files: 0
+LOG: 2015-03-25 09:05.09 : Size of the "SG_Videos" dir is 0.0 KB.

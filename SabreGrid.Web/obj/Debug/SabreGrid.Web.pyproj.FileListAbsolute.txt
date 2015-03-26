@@ -1,0 +1,15 @@
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\bin\Microsoft.PythonTools.WebRole.dll
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\attach_server.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\visualstudio_py_debugger.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\visualstudio_py_repl.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\visualstudio_py_util.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\__init__.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\__main__.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\bin\AzureSetup.cfg
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\bin\Microsoft.PythonTools.AzureSetup.exe
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\bin\Microsoft.PythonTools.AzureSetup.exe.config
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\bin\wfastcgi.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\deployment-updated-pyvenv.cfg
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\ptvs_virtualenv_proxy.py
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\web.config
+C:\Users\CerealDomain\Documents\GitHub\sabregrid\SabreGrid\SabreGrid.Web\obj\Debug\web.debug.config

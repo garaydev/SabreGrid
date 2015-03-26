@@ -1,0 +1,46 @@
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+body {
+  padding-top: 70px;
+}
+
+footer{
+    height: 250px;
+    background-color:#2c3e50;
+    color:#FFF;
+}
+
+.nearText{
+font-family: 'Hind', sans-serif;
+font-size: 60px;
+color:#fff;
+}
+
+.branderText{
+font-size: 80px;
+color:#fff;
+}
+
+.sglogo{
+margin: 0px auto;
+}
+
+.darkButton{
+color:#FFF;
+font-weight: bolder;
+}
+
+@media (max-width:550px) {
+
+    .branderText{
+        font-size: 45px;
+    }    
+}
+
+@media (max-width:400px) {
+
+    .branderText{
+        font-size: 30px;
+    }
+}
