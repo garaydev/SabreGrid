@@ -1,7 +1,7 @@
 """
 Routes and views for the bottle application.
 """
-
+import os
 from bottle import route, view
 from datetime import datetime
 
@@ -18,6 +18,9 @@ def home():
 @view('contact')
 def contact():
     """Renders the contact page."""
+
+
+
     return dict(
         title='Contact',
         message='Your contact page.',

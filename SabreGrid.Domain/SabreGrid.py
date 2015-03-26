@@ -10,7 +10,7 @@ __author__ = "@garaydev"
 __license__ = "The MIT License (MIT)"
 __date__ = "03/07/2015"
 __version__ = "0.01341"
-
+__name__ = "SabreDomain"
 # global imports
 try:
     import importlib
